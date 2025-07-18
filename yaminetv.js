@@ -85,7 +85,7 @@ const newsArticlesData = [
 ];
 
 let newsLoadedCount = 0;
-const LOAD_LIMIT = 5; // Increased from 1 to 5 for better performance
+const LOAD_LIMIT = 5; // **OPTIMIZED: Changed from 1 to 5**
 
 function toggleTheme() {
     const body = document.body;
@@ -217,7 +217,7 @@ function renderNewsArticles(startIndex, count) {
         });
         fragment.appendChild(newsCard);
     }
-    newsGrid.appendChild(fragment); // Append fragment once
+    newsGrid.appendChild(fragment); // **OPTIMIZED: Append fragment once**
 
     // Observe newly added cards for animation
     fragment.querySelectorAll('.news-card').forEach(card => {
@@ -255,7 +255,7 @@ function renderTrendingNewsCards() {
 
     carousel.innerHTML = ''; // Clear existing content
 
-    const fragment = document.createDocumentFragment(); // Use DocumentFragment for performance
+    const fragment = document.createDocumentFragment(); // **OPTIMIZED: Use DocumentFragment for performance**
 
     newsArticlesData.forEach(articleData => {
         const newsCard = document.createElement('a');
@@ -301,9 +301,9 @@ function renderTrendingNewsCards() {
         newsContentDiv.appendChild(newsMetaDiv);
 
         newsCard.appendChild(newsContentDiv);
-        fragment.appendChild(newsCard); // Append to fragment
+        fragment.appendChild(newsCard); // **OPTIMIZED: Append to fragment**
     });
-    carousel.appendChild(fragment); // Append fragment once to the carousel
+    carousel.appendChild(fragment); // **OPTIMIZED: Append fragment once to the carousel**
 }
 
 // Replaced setInterval with requestAnimationFrame for smoother scrolling
@@ -525,10 +525,9 @@ const animationObserver = new IntersectionObserver((entries, observer) => {
     rootMargin: '0px 0px -50px 0px' // Reduce this to trigger animation a bit sooner
 });
 
-// REMOVED: animationMutationObserver as it was likely causing excessive recalculations.
+// **OPTIMIZED: REMOVED animationMutationObserver** as it was likely causing excessive recalculations.
 // The existing `animationObserver` should handle animations for newly added elements
-// when they enter the viewport. If you find animations not working on newly loaded content,
-// we can re-evaluate with a more specific/optimized mutation observer.
+// when they enter the viewport.
 
 function showCustomAlert(message) {
     let alertModal = document.getElementById('customAlertModal');
