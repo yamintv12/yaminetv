@@ -85,7 +85,7 @@ const newsArticlesData = [
 ];
 
 let newsLoadedCount = 0;
-const LOAD_LIMIT = 1;
+const LOAD_LIMIT = 5; // Increased from 1 to 5 for better performance
 
 function toggleTheme() {
     const body = document.body;
@@ -125,12 +125,14 @@ function toggleMobileMenu() {
 
     if (navMenu.classList.contains('active')) {
         mobileToggleIcon.className = 'fas fa-times';
-        document.body.style.overflow = 'hidden';
+        document.body.style.overflow = 'hidden'; // Prevent scrolling body when sidebar is open
         navMenu.setAttribute('aria-expanded', 'true');
-        navMenu.firstElementChild.focus();
+        // Focus on the first focusable element in the menu for accessibility
+        const firstFocusable = navMenu.querySelector('a, button');
+        if (firstFocusable) firstFocusable.focus();
     } else {
         mobileToggleIcon.className = 'fas fa-bars';
-        document.body.style.overflow = '';
+        document.body.style.overflow = ''; // Restore body scrolling
         navMenu.setAttribute('aria-expanded', 'false');
         mobileToggle.focus();
     }
@@ -215,7 +217,12 @@ function renderNewsArticles(startIndex, count) {
         });
         fragment.appendChild(newsCard);
     }
-    newsGrid.appendChild(fragment);
+    newsGrid.appendChild(fragment); // Append fragment once
+
+    // Observe newly added cards for animation
+    fragment.querySelectorAll('.news-card').forEach(card => {
+        animationObserver.observe(card);
+    });
 
     const sentinel = document.getElementById('news-sentinel');
     if (sentinel) {
@@ -246,7 +253,9 @@ function renderTrendingNewsCards() {
     const carousel = document.getElementById('trendingNewsCarousel');
     if (!carousel) return;
 
-    carousel.innerHTML = '';
+    carousel.innerHTML = ''; // Clear existing content
+
+    const fragment = document.createDocumentFragment(); // Use DocumentFragment for performance
 
     newsArticlesData.forEach(articleData => {
         const newsCard = document.createElement('a');
@@ -292,44 +301,67 @@ function renderTrendingNewsCards() {
         newsContentDiv.appendChild(newsMetaDiv);
 
         newsCard.appendChild(newsContentDiv);
-        carousel.appendChild(newsCard);
+        fragment.appendChild(newsCard); // Append to fragment
     });
+    carousel.appendChild(fragment); // Append fragment once to the carousel
 }
 
-let autoScrollInterval;
-const scrollSpeed = 3000;
+// Replaced setInterval with requestAnimationFrame for smoother scrolling
+let animationFrameId = null;
+let lastScrollTime = 0;
+const scrollSpeed = 3000; // Time in ms between scrolls
 
-function autoScrollCarousel() {
-    const carouselWrapper = document.getElementById('newsCarouselWrapper');
-    if (!carouselWrapper || carouselWrapper.children.length === 0) return;
-
-    const carousel = document.getElementById('trendingNewsCarousel');
-    const computedStyle = window.getComputedStyle(carousel);
-    const gap = parseFloat(computedStyle.gap) || 0;
-
-    const scrollUnit = carouselWrapper.clientWidth - (2 * parseFloat(window.getComputedStyle(carouselWrapper).paddingLeft || 0)) + gap;
-
-    let nextScrollLeft = carouselWrapper.scrollLeft + scrollUnit;
-
-    if (carouselWrapper.scrollLeft + carouselWrapper.clientWidth >= carouselWrapper.scrollWidth - 1) {
-        nextScrollLeft = 0;
+function autoScrollCarouselRAF(timestamp) {
+    if (!lastScrollTime) {
+        lastScrollTime = timestamp;
     }
 
-    carouselWrapper.scrollTo({
-        left: nextScrollLeft,
-        behavior: 'smooth'
-    });
+    const elapsed = timestamp - lastScrollTime;
+
+    if (elapsed > scrollSpeed) {
+        const carouselWrapper = document.getElementById('newsCarouselWrapper');
+        if (carouselWrapper) {
+            const carousel = document.getElementById('trendingNewsCarousel');
+            if (carousel) { // Ensure carousel element exists
+                const computedStyle = window.getComputedStyle(carousel);
+                const gap = parseFloat(computedStyle.gap) || 0;
+
+                const wrapperPaddingLeft = parseFloat(window.getComputedStyle(carouselWrapper).paddingLeft || 0);
+                const wrapperPaddingRight = parseFloat(window.getComputedStyle(carouselWrapper).paddingRight || 0);
+                const scrollUnit = carouselWrapper.clientWidth - wrapperPaddingLeft - wrapperPaddingRight + gap;
+
+                let nextScrollLeft = carouselWrapper.scrollLeft + scrollUnit;
+
+                // Reset to start if near the end, with a small tolerance
+                // The tolerance of 5px helps with potential floating point inaccuracies
+                if (carouselWrapper.scrollLeft + carouselWrapper.clientWidth >= carouselWrapper.scrollWidth - 5) {
+                    nextScrollLeft = 0;
+                }
+
+                carouselWrapper.scrollTo({
+                    left: nextScrollLeft,
+                    behavior: 'smooth'
+                });
+                lastScrollTime = timestamp; // Reset the timer
+            }
+        }
+    }
+    animationFrameId = requestAnimationFrame(autoScrollCarouselRAF);
 }
 
 function startAutoScroll() {
-    if (newsArticlesData.length > 0) {
-        stopAutoScroll();
-        autoScrollInterval = setInterval(autoScrollCarousel, scrollSpeed);
+    stopAutoScroll(); // Clear any existing animation frames
+    if (newsArticlesData.length > 0) { // Only start if there's content to scroll
+        lastScrollTime = 0; // Reset last scroll time for immediate next scroll
+        animationFrameId = requestAnimationFrame(autoScrollCarouselRAF);
     }
 }
 
 function stopAutoScroll() {
-    clearInterval(autoScrollInterval);
+    if (animationFrameId) {
+        cancelAnimationFrame(animationFrameId);
+        animationFrameId = null;
+    }
 }
 
 document.querySelectorAll('a[href^="#"]').forEach(anchor => {
@@ -369,7 +401,9 @@ document.addEventListener('click', (e) => {
     const navbar = document.querySelector('.navbar');
     const sidebarOverlay = document.querySelector('.sidebar-overlay');
 
-    if (!navbar.contains(e.target) && navMenu.classList.contains('active') && !mobileToggle.contains(e.target)) {
+    // Only close if click is outside navbar and menu is active
+    // Ensure the click isn't on the mobile toggle itself
+    if (!navbar.contains(e.target) && navMenu.classList.contains('active') && !mobileToggle.contains(e.target) && !navMenu.contains(e.target)) {
         navMenu.classList.remove('active');
         sidebarOverlay.classList.remove('active');
         document.querySelector('.mobile-toggle i').className = 'fas fa-bars';
@@ -398,7 +432,7 @@ const mainObserver = new IntersectionObserver((entries, observer) => {
             const sentinel = entry.target;
             const type = sentinel.dataset.type;
 
-            observer.unobserve(sentinel);
+            observer.unobserve(sentinel); // Unobserve once it's intersected to avoid multiple triggers
 
             if (type === 'news') {
                 loadNextNews();
@@ -407,7 +441,7 @@ const mainObserver = new IntersectionObserver((entries, observer) => {
     });
 }, {
     root: null,
-    rootMargin: '0px 0px 100px 0px',
+    rootMargin: '0px 0px 100px 0px', // Load content when sentinel is 100px from viewport bottom
     threshold: 0.1
 });
 
@@ -423,17 +457,19 @@ document.addEventListener('DOMContentLoaded', () => {
         console.error("Error loading theme:", e);
     }
 
+    // Initial load for main news grid
     try {
         newsLoadedCount = 0;
-        renderNewsArticles(newsLoadedCount, LOAD_LIMIT);
-        newsLoadedCount += LOAD_LIMIT;
+        loadNextNews(); // Call loadNextNews which uses renderNewsArticles
     } catch (e) {
         console.error("Error rendering news articles:", e);
     }
 
+    // Trending news carousel setup
     try {
         renderTrendingNewsCards();
-        setTimeout(() => {
+        // Start auto-scroll for carousel with requestAnimationFrame
+        setTimeout(() => { // Small delay to ensure layout is stable
             startAutoScroll();
         }, 100);
 
@@ -441,19 +477,21 @@ document.addEventListener('DOMContentLoaded', () => {
         if (newsCarouselWrapper) {
             newsCarouselWrapper.addEventListener('mouseenter', stopAutoScroll);
             newsCarouselWrapper.addEventListener('mouseleave', startAutoScroll);
+            // Also stop/start on touch for mobile
+            newsCarouselWrapper.addEventListener('touchstart', stopAutoScroll, { passive: true });
+            newsCarouselWrapper.addEventListener('touchend', startAutoScroll, { passive: true });
         }
     } catch (e) {
         console.error("Error rendering trending news carousel or starting auto-scroll:", e);
     }
 
-    try {
-        document.querySelectorAll('.news-card').forEach(card => {
-            animationObserver.observe(card);
-        });
-    } catch (e) {
-        console.error("Error applying loading animations:", e);
-    }
+    // Attach animation observer to existing news cards initially
+    // New cards are observed within renderNewsArticles
+    document.querySelectorAll('.news-section .news-card').forEach(card => {
+        animationObserver.observe(card);
+    });
 
+    // Observe sentinels for infinite scrolling
     document.querySelectorAll('.load-more-sentinel').forEach(sentinel => {
         const type = sentinel.dataset.type;
         let dataArray;
@@ -479,35 +517,18 @@ const animationObserver = new IntersectionObserver((entries, observer) => {
                 entry.target.style.animation = 'fadeInUp 0.6s ease forwards';
                 entry.target.classList.add('animated-once');
             }
-            observer.unobserve(entry.target);
+            observer.unobserve(entry.target); // Stop observing once animated
         }
     });
 }, {
-    threshold: 0.1,
-    rootMargin: '0px 0px -50px 0px'
+    threshold: 0.1, // Trigger when 10% of the element is visible
+    rootMargin: '0px 0px -50px 0px' // Reduce this to trigger animation a bit sooner
 });
 
-const newsObserverTargetNode = document.getElementById('news-articles-grid');
-
-const config = { childList: true, subtree: true };
-
-const animationMutationCallback = function(mutationsList, observer) {
-    for(const mutation of mutationsList) {
-        if (mutation.type === 'childList') {
-            mutation.addedNodes.forEach(node => {
-                if (node.nodeType === 1 && (node.classList.contains('news-card'))) {
-                    node.classList.remove('animated-once');
-                    node.style.animation = 'none';
-                    node.style.opacity = '0';
-                    animationObserver.observe(node);
-                }
-            });
-        }
-    }
-};
-
-const animationMutationObserver = new MutationObserver(animationMutationCallback);
-if (newsObserverTargetNode) animationMutationObserver.observe(newsObserverTargetNode, config);
+// REMOVED: animationMutationObserver as it was likely causing excessive recalculations.
+// The existing `animationObserver` should handle animations for newly added elements
+// when they enter the viewport. If you find animations not working on newly loaded content,
+// we can re-evaluate with a more specific/optimized mutation observer.
 
 function showCustomAlert(message) {
     let alertModal = document.getElementById('customAlertModal');
