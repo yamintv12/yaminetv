@@ -34,7 +34,7 @@ const newsArticlesData = [
         excerpt: "A spectacular batting performance led India to a commanding victory in the first T20 match against Australia...",
         author: "Sports Desk",
         time: "2 hours ago",
-        img: "https://res.cloudinary.com/dv8uywtbo/image/upload/v1752710550/t20-wc_ln5ou8.jpg",
+        img: "https://res.cloudinary.com/dv8uywtbo/image/upload/v1752855845/t20-wc_mhj2k5.jpg",
         redirectUrl: "news-detail.html?article=india-dominates-aus-t20"
     },
     {
@@ -43,7 +43,7 @@ const newsArticlesData = [
         excerpt: "An action-packed Manchester derby saw City edge past United in a nail-biting encounter at Old Trafford...",
         author: "Football Reporter",
         time: "4 hours ago",
-        img: "https://res.cloudinary.com/dv8uywtbo/image/upload/v1752710550/odi-wc_y5t0m8.jpg",
+        img: "https://res.cloudinary.com/dv8uywtbo/image/upload/v1752855954/odi-wc_p91zs9.jpg",
         redirectUrl: "news-detail.html?article=manchester-derby-thriller"
     },
     {
@@ -52,7 +52,7 @@ const newsArticlesData = [
         excerpt: "Athletes from around the world are making final preparations as the countdown to Paris 2024 Olympics continues...",
         author: "Olympic Correspondent",
         time: "6 hours ago",
-        img: "https://res.cloudinary.com/dv8uywtbo/image/upload/v1752710550/nepal-fan_cpbzvh.jpg",
+        img: "https://res.cloudinary.com/dv8uywtbo/image/upload/v1752855978/nepal-fan_idjkbp.jpg",
         redirectUrl: "news-detail.html?article=olympic-preparations"
     },
     {
@@ -61,7 +61,7 @@ const newsArticlesData = [
         excerpt: "The Wimbledon Quarter-Finals promise exciting matches as top seeds face challenging opponents on the grass courts...",
         author: "Tennis Analyst",
         time: "8 hours ago",
-        img: "https://res.cloudinary.com/dv8uywtbo/image/upload/v1752710549/fifa-2022-arg_mbv6hg.jpg",
+        img: "https://res.cloudinary.com/dv8uywtbo/image/upload/v1752855916/fifa-2022-arg_hkxz5n.jpg",
         redirectUrl: "news-detail.html?article=wimbledon-quarter-finals"
     },
     {
@@ -70,7 +70,7 @@ const newsArticlesData = [
         excerpt: "Two powerhouse teams prepare for what promises to be an unforgettable NBA Finals series with championship glory at stake...",
         author: "",
         time: "12 hours ago",
-        img: "https://res.cloudinary.com/dv8uywtbo/image/upload/v1752710549/cr7-real_cnqfyw.jpg",
+        img: "https://res.cloudinary.com/dv8uywtbo/image/upload/v1752855893/cr7-real_x1mndw.jpg",
         redirectUrl: "news-detail.html?article=nba-finals-preview"
     },
     {
@@ -79,7 +79,7 @@ const newsArticlesData = [
         excerpt: "An extraordinary day of athletics saw multiple world records fall at the latest Diamond League meeting in Eugene...",
         author: "Athletics Writer",
         time: "1 day ago",
-        img: "https://res.cloudinary.com/dv8uywtbo/image/upload/v1752710549/james-cl_dti5ux.jpg",
+        img: "https://res.cloudinary.com/dv8uywtbo/image/upload/v1752855950/james-cl_jszzeh.jpg",
         redirectUrl: "news-detail.html?article=world-records-broken"
     }
 ];
